@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>THE FORDz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #1e2d45;
+      --navy-dark: #16243a;
+      --navy-light: #243452;
+      --card-bg: #243452;
+      --card-border: #2e4168;
+      --text: #ffffff;
+      --text-muted: rgba(255,255,255,0.6);
+      --accent: #5bc8f5;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--navy);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Subtle background noise */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: 
+        radial-gradient(ellipse at 20% 50%, rgba(91,200,245,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(91,200,245,0.04) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      width: 100%;
+      max-width: 1100px;
+      padding: 2rem;
+    }
+
+    .brand {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      letter-spacing: 0.15em;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 40px rgba(91,200,245,0.2);
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 3.5rem;
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    .cards {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 20px;
+      width: 280px;
+      overflow: hidden;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .card:nth-child(1) { animation-delay: 0.1s; }
+    .card:nth-child(2) { animation-delay: 0.25s; }
+    .card:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px var(--accent);
+      border-color: var(--accent);
+    }
+
+    .card-image-wrap {
+      position: relative;
+      height: 340px;
+      overflow: hidden;
+    }
+
+    .card-image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .card:hover .card-image-wrap img {
+      transform: scale(1.07);
+    }
+
+    /* Play overlay */
+    .play-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card:hover .play-overlay {
+      opacity: 1;
+    }
+
+    .play-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      border: 2px solid rgba(255,255,255,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .card:hover .play-icon {
+      transform: scale(1.1);
+      background: rgba(91,200,245,0.3);
+    }
+
+    .card-label {
+      padding: 1.2rem;
+      text-align: center;
+    }
+
+    .card-letter {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.8rem;
+      letter-spacing: 0.1em;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    /* Image placeholder fallback */
+    .img-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 5rem;
+      color: rgba(255,255,255,0.15);
+    }
+
+    .img-placeholder.w-bg { background: linear-gradient(135deg, #c0471a, #e05c2a); }
+    .img-placeholder.e-bg { background: linear-gradient(135deg, #0a4a6a, #0d7ea8); }
+    .img-placeholder.n-bg { background: linear-gradient(135deg, #1a2a4a, #3a86b8); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="brand">THE FORDz</div>
+    <div class="subtitle">✦ Click me to feel the VIBE ✦</div>
+
+    <div class="cards">
+      {% for artist in artists %}
+      <a class="card" href="/artist/{{ artist.id }}">
+        <div class="card-image-wrap">
+          <img 
+            src="/static/images/{{ artist.image }}" 
+            alt="{{ artist.name }}"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+          />
+          <div class="img-placeholder {{ artist.letter.lower() }}-bg" style="display:none;">{{ artist.letter }}</div>
+         
+        </div>
+        <div class="card-label">
+          <div class="card-letter">{{ artist.letter }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</body>
+</html>

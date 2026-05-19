@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>THE FORDz — {{ artist.name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #1e2d45;
+      --navy-dark: #16243a;
+      --navy-light: #243452;
+      --card-bg: #243452;
+      --card-border: #2e4168;
+      --text: #bcd1ec;
+      --text-muted: rgba(255,255,255,0.55);
+      --accent: #5bc8f5;
+      --artist-color: {{ artist.color }};
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--navy);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: 
+        radial-gradient(ellipse at 10% 60%, rgba(91,200,245,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 90% 10%, var(--artist-color) 0%, transparent 40%);
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* TOP BAR */
+    .topbar {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem 2rem;
+    }
+
+    .brand {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: 0.2em;
+      color: var(--text);
+    }
+
+    .home-btn {
+      position: absolute;
+      right: 2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 12px;
+      color: var(--text);
+      text-decoration: none;
+      width: 46px;
+      height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .home-btn:hover {
+      border-color: var(--accent);
+      background: var(--navy-light);
+    }
+
+    /* MAIN LAYOUT */
+    .main {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding: 2rem;
+      gap: 4rem;
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* ARTIST IMAGE */
+    .artist-image-wrap {
+      flex-shrink: 0;
+      width: 380px;
+      height: 480px;
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      border: 2px solid var(--card-border);
+      transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+
+    .artist-image-wrap:hover {
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 2px var(--accent);
+      border-color: var(--accent);
+    }
+
+    .artist-image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .artist-image-wrap:hover img {
+      transform: scale(1.04);
+    }
+
+    .img-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 8rem;
+      color: rgba(255,255,255,0.2);
+    }
+
+    .img-placeholder.w-bg { background: linear-gradient(135deg, #c0471a, #e05c2a); }
+    .img-placeholder.e-bg { background: linear-gradient(135deg, #0a4a6a, #0d7ea8); }
+    .img-placeholder.n-bg { background: linear-gradient(135deg, #1a2a4a, #3a86b8); }
+
+    /* Ripple pulse when playing */
+    .artist-image-wrap.playing::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      box-shadow: 0 0 0 0 rgba(91,200,245,0.6);
+      animation: ripple 1.5s ease-out infinite;
+    }
+
+    @keyframes ripple {
+      to { box-shadow: 0 0 0 20px rgba(91,200,245,0); }
+    }
+
+    /* Play indicator on image */
+    .play-hint {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      border-radius: 22px;
+    }
+
+    .artist-image-wrap:hover .play-hint {
+      opacity: 1;
+    }
+
+    .play-btn-big {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255,255,255,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      color: white;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .artist-image-wrap:hover .play-btn-big {
+      transform: scale(1.1);
+      background: rgba(91,200,245,0.3);
+    }
+
+    /* ARTIST INFO */
+    .artist-info {
+      flex: 1;
+      animation: slideIn 0.5s ease both;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(30px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .artist-letter-display {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(5rem, 12vw, 10rem);
+      line-height: 0.85;
+      color: var(--text);
+      position: relative;
+    }
+
+    .artist-letter-display span.big {
+      font-size: 1.3em;
+      color: var(--text);
+    }
+
+    .quote {
+      font-size: clamp(3rem, 3vw, 2.2rem);
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 1.5rem;
+      color: var(--text);
+    }
+
+    .artist-name {
+      font-size: 1rem;
+      color: var(--text-muted);
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+
+    .genre-tag {
+      display: inline-block;
+      background: rgba(91,200,245,0.12);
+      border: 1px solid rgba(91,200,245,0.3);
+      color: var(--accent);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.85rem;
+      border-radius: 999px;
+      margin-bottom: 2rem;
+    }
+
+    /* PLAYER */
+    .player {
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: 18px;
+      padding: 1.4rem 1.8rem;
+      max-width: 480px;
+    }
+
+    .player-status {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      transition: background 0.3s;
+    }
+
+    .status-dot.active {
+      background: #4ade80;
+      box-shadow: 0 0 8px #4ade80;
+      animation: blink 1.2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Progress */
+    .progress-wrap {
+      width: 100%;
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 999px;
+      margin-bottom: 0.8rem;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), rgba(6, 244, 22, 0.5));
+      border-radius: 999px;
+      transition: width 0.2s linear;
+    }
+
+    .time-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .ctrl-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(6, 233, 59, 0.12);
+      border-radius: 12px;
+      color: var(--text);
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    }
+
+    .ctrl-btn:hover {
+      background: rgba(91,200,245,0.15);
+      border-color: var(--accent);
+    }
+
+    .ctrl-btn:active { transform: scale(0.92); }
+
+    .ctrl-btn.play-pause {
+      width: 56px;
+      height: 56px;
+      font-size: 1.4rem;
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--navy-dark);
+    }
+
+    .ctrl-btn.play-pause:hover {
+      background: #9de5ff;
+    }
+
+    .volume-row {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+
+    .volume-row span {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    input[type="range"] {
+      flex: 1;
+      height: 4px;
+      -webkit-appearance: none;
+      background: rgba(255,255,255,0.12);
+      border-radius: 999px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 6px rgba(91,200,245,0.5);
+    }
+
+    /* NOTE: No audio file? show placeholder message */
+    .no-audio {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 0.5rem 0;
+    }
+
+    /* BOTTOM OTHERS */
+    .others-row {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      display: flex;
+      gap: 1rem;
+      z-index: 10;
+    }
+
+    .other-card {
+      width: 90px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1.5px solid var(--card-border);
+      text-decoration: none;
+      color: var(--text);
+      background: var(--card-bg);
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .other-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+    }
+
+    .other-card img {
+      width: 100%;
+      height: 70px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .other-placeholder {
+      width: 100%;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      color: rgba(255,255,255,0.2);
+    }
+
+    .other-placeholder.w-bg { background: linear-gradient(135deg, #c0471a, #e05c2a); }
+    .other-placeholder.e-bg { background: linear-gradient(135deg, #0a4a6a, #0d7ea8); }
+    .other-placeholder.n-bg { background: linear-gradient(135deg, #1a2a4a, #3a86b8); }
+
+    .other-label {
+      text-align: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem;
+      padding: 0.4rem;
+      letter-spacing: 0.1em;
+    }
+
+    /* Waveform bars animation */
+    .waveform {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 24px;
+      margin-left: auto;
+    }
+
+    .waveform span {
+      display: block;
+      width: 4px;
+      background: var(--accent);
+      border-radius: 2px;
+      min-height: 4px;
+      animation: none;
+      height: 4px;
+      opacity: 0.3;
+      transition: opacity 0.3s;
+    }
+
+    .waveform.playing span {
+      opacity: 1;
+    }
+
+    .waveform.playing span:nth-child(1) { animation: wave 0.8s ease-in-out infinite 0.0s; }
+    .waveform.playing span:nth-child(2) { animation: wave 0.8s ease-in-out infinite 0.15s; }
+    .waveform.playing span:nth-child(3) { animation: wave 0.8s ease-in-out infinite 0.3s; }
+    .waveform.playing span:nth-child(4) { animation: wave 0.8s ease-in-out infinite 0.45s; }
+    .waveform.playing span:nth-child(5) { animation: wave 0.8s ease-in-out infinite 0.6s; }
+
+    @keyframes wave {
+      0%, 100% { height: 4px; }
+      50% { height: 20px; }
+    }
+
+    @media (max-width: 768px) {
+      .main {
+        flex-direction: column;
+        gap: 2rem;
+        padding: 1rem;
+        align-items: flex-start;
+      }
+      .artist-image-wrap {
+        width: 100%;
+        height: 280px;
+      }
+      .others-row {
+        position: relative;
+        bottom: auto;
+        right: auto;
+        margin-top: 1rem;
+      }
+    }
+    .home-btn img {
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+    }
+    .ctrl-btn img {
+      width: 35px;
+      height: 35px;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+  <div class="brand">THE FORDz</div>
+  
+  
+
+  <a href="/" class="home-btn">
+    <img src="{{ url_for('static', filename='images/home.svg') }}" alt="Home">
+  </a>
+  </div>
+
+  <div class="main">
+    <!-- Artist Image (click to play) -->
+    <div class="artist-image-wrap" id="imageWrap" onclick="togglePlay()">
+      <img 
+        src="/static/images/{{ artist.image }}" 
+        alt="{{ artist.name }}"
+        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+        id="artistImg"
+      />
+      <div class="img-placeholder {{ artist.letter.lower() }}-bg" style="display:none;">{{ artist.letter }}</div>
+      <div class="play-hint">
+        <div class="play-btn-big" id="playBtnBig">▶</div>
+      </div>
+    </div>
+
+    <!-- Artist Info + Player -->
+    <div class="artist-info">
+      
+
+      <div class="quote">{{ artist.quote }}</div>
+     
+   
+
+      <!-- Audio Player -->
+      <div class="player">
+        <div class="player-status">
+          <div class="status-dot" id="statusDot"></div>
+          <span id="statusText"></span>
+          <div class="waveform" id="waveform">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <div class="progress-wrap" id="progressWrap" onclick="seekAudio(event)">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="time-row">
+          <span id="currentTime">0:00</span>
+          <span id="totalTime">0:00</span>
+        </div>
+
+        <div class="controls">
+
+            <button class="ctrl-btn" onclick="rewind()">
+              <img src="{{ url_for('static', filename='images/backward3.png') }}" alt="Rewind">
+            </button>
+
+            <button class="ctrl-btn play-pause" id="playPauseBtn" onclick="togglePlay()">
+              ▶
+            </button>
+
+            <button class="ctrl-btn" onclick="forward()">
+              <img src="{{ url_for('static', filename='images/forward3.png') }}" alt="Forward">
+            </button>
+          
+
+        </div>
+
+    
+
+        <div class="no-audio" id="noAudioMsg" style="display:none;">
+          ⚠️ No audio file found. Add <code>{{ artist.audio }}</code> to <code>static/audio/</code>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Other artists bottom-right -->
+  <div class="others-row">
+    {% for other in others %}
+    <a class="other-card" href="/artist/{{ other.id }}">
+      <img 
+        src="/static/images/{{ other.image }}" 
+        alt="{{ other.name }}"
+        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+      />
+      <div class="other-placeholder {{ other.letter.lower() }}-bg" style="display:none;">{{ other.letter }}</div>
+      <div class="other-label">{{ other.letter }}</div>
+    </a>
+    {% endfor %}
+  </div>
+
+  <audio id="audioPlayer" preload="auto">
+    <source src="/static/audio/{{ artist.audio }}" type="audio/mpeg">
+  </audio>
+
+  <script>
+    const audio = document.getElementById('audioPlayer');
+    const progressBar = document.getElementById('progressBar');
+    const currentTimeEl = document.getElementById('currentTime');
+    const totalTimeEl = document.getElementById('totalTime');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const playBtnBig = document.getElementById('playBtnBig');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const waveform = document.getElementById('waveform');
+    const imageWrap = document.getElementById('imageWrap');
+
+    function formatTime(s) {
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60).toString().padStart(2, '0');
+      return `${m}:${sec}`;
+    }
+
+    // Check if audio loaded
+    audio.addEventListener('error', () => {
+      document.getElementById('noAudioMsg').style.display = 'block';
+      statusText.textContent = 'No audio file';
+    });
+
+    audio.addEventListener('loadedmetadata', () => {
+      totalTimeEl.textContent = formatTime(audio.duration);
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        const pct = (audio.currentTime / audio.duration) * 100;
+        progressBar.style.width = pct + '%';
+        currentTimeEl.textContent = formatTime(audio.currentTime);
+      }
+    });
+
+    audio.addEventListener('ended', () => {
+      setPlayingState(false);
+    });
+
+    function setPlayingState(playing) {
+      if (playing) {
+        playPauseBtn.textContent = '⏸';
+        playBtnBig.textContent = '⏸';
+        statusDot.classList.add('active');
+        statusText.textContent = 'Now Playing';
+        waveform.classList.add('playing');
+        imageWrap.classList.add('playing');
+      } else {
+        playPauseBtn.textContent = '▶';
+        playBtnBig.textContent = '▶';
+        statusDot.classList.remove('active');
+        statusText.textContent = 'Paused';
+        waveform.classList.remove('playing');
+        imageWrap.classList.remove('playing');
+      }
+    }
+
+    function togglePlay() {
+      if (audio.paused) {
+        audio.play().then(() => setPlayingState(true)).catch(() => {
+          document.getElementById('noAudioMsg').style.display = 'block';
+          statusText.textContent = 'Could not play audio';
+        });
+      } else {
+        audio.pause();
+        setPlayingState(false);
+      }
+    }
+
+    function rewind() {
+      audio.currentTime = Math.max(0, audio.currentTime - 10);
+    }
+
+    function forward() {
+      audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10);
+    }
+
+    function setVolume(v) {
+      audio.volume = v;
+    }
+
+    function seekAudio(e) {
+      const rect = document.getElementById('progressWrap').getBoundingClientRect();
+      const pct = (e.clientX - rect.left) / rect.width;
+      audio.currentTime = pct * (audio.duration || 0);
+    }
+    
+    
+  </script>
+</body>
+</html>
