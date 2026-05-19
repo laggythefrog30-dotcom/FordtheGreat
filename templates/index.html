@@ -14,7 +14,7 @@
       --card-bg: #243452;
       --card-border: #2e4168;
       --text: #ffffff;
-      --text-muted: rgba(255,255,255,0.6);
+      --text-muted: rgb(255, 85, 0);
       --accent: #5bc8f5;
     }
 
@@ -199,11 +199,11 @@
 <body>
   <div class="container">
     <div class="brand">THE FORDz</div>
-    <div class="subtitle">✦ Click me to feel the VIBE ✦</div>
+    <div class="subtitle">⚡ CLICK ME AND LET’S ROCK & ROLL ⚡ </div>
 
     <div class="cards">
       {% for artist in artists %}
-      <a class="card" href="/artist/{{ artist.id }}">
+      <a class="card" href="/me/{{ artist.id }}">
         <div class="card-image-wrap">
           <img 
             src="/static/images/{{ artist.image }}" 

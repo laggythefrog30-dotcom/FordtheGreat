@@ -40,13 +40,13 @@ ARTISTS = [
 def home():
     return render_template("index.html", artists=ARTISTS)
 
-@app.route("/artist/<artist_id>")
+@app.route("/me/<artist_id>")
 def artist(artist_id):
     artist = next((a for a in ARTISTS if a["id"] == artist_id), None)
     if not artist:
         return "Not found", 404
     others = [a for a in ARTISTS if a["id"] != artist_id]
-    return render_template("artist.html", artist=artist, others=others)
+    return render_template("me.html", artist=artist, others=others)
 
 @app.route("/static/audio/<filename>")
 def serve_audio(filename):
